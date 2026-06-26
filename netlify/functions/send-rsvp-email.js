@@ -87,6 +87,7 @@ async function sendEmail(payload, apiKey) {
 
   const text = await res.text();
   if (!res.ok) {
+    console.error("Resend error:", res.status, text);
     throw new Error(text);
   }
   return text ? JSON.parse(text) : {};
