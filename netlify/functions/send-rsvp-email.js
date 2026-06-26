@@ -4,9 +4,13 @@ exports.handler = async function(event) {
   }
 
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
   if (!RESEND_API_KEY) {
+    console.error("RESEND_API_KEY is missing");
     return { statusCode: 500, body: 'Missing RESEND_API_KEY' };
   }
+  
+  console.log("RESEND_API_KEY found");
 
   let data;
   try {
