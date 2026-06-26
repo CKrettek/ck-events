@@ -57,18 +57,74 @@ const EVENT_SLUG = "christian-birthday-2026";
 function openModal(status){document.getElementById('status').value=status;document.getElementById('modalTitle').textContent=status==='attending'?"I’ll be there":"Sorry, can’t make it";document.getElementById('submitButton').classList.toggle("decline-submit",status==='declined');document.getElementById('dietfield').style.display=status==='attending'?"block":"none";document.getElementById('formContent').style.display='block';document.getElementById('successBox').style.display='none';document.getElementById('errorBox').style.display='none';document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.getElementById('rsvpForm').addEventListener('submit',async function(e){e.preventDefault();const button=document.getElementById('submitButton');const errorBox=document.getElementById('errorBox');button.disabled=true;errorBox.style.display='none';const payload={event_slug:EVENT_SLUG,name:document.getElementById('name').value.trim(),email:document.getElementById('email').value.trim()||null,status:document.getElementById('status').value,dietary_requirements:document.getElementById('status').value==='attending'?(document.getElementById('dietary').value.trim()||null):null,guest_count:document.getElementById('status').value==='attending'?(parseInt(document.getElementById('guest_count').value||'1',10)):1,message:null};try{const response=await fetch(`${SUPABASE_URL}/rest/v1/rsvps`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(payload)});if(!response.ok){throw new Error(await response.text());}try {
-  await fetch('/.netlify/functions/send-rsvp-email', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(payload)
-  });
-} catch(emailErr) {
-  console.warn('RSVP saved, but email notification failed.', emailErr);
-}
-document.getElementById('formContent').style.display='none';
-document.getElementById('successBox').style.display='block';
-document.getElementById('successTitle').textContent=payload.name?"Thank you, "+payload.name+"!":"Thank you!";}catch(err){errorBox.textContent="Sorry, the RSVP could not be saved. Please email Christian at krettek@hotmail.com.";errorBox.style.display='block';console.error(err);}finally{button.disabled=false;}});
+document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const button = document.getElementById('submitButton');
+  const errorBox = document.getElementById('errorBox');
+
+  if (button.disabled) return;
+
+  const originalButtonText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'SENDING...';
+  errorBox.style.display = 'none';
+
+  const payload = {
+    event_slug: EVENT_SLUG,
+    name: document.getElementById('name').value.trim(),
+    email: document.getElementById('email').value.trim() || null,
+    status: document.getElementById('status').value,
+    dietary_requirements: document.getElementById('status').value === 'attending'
+      ? (document.getElementById('dietary').value.trim() || null)
+      : null,
+    guest_count: document.getElementById('status').value === 'attending'
+      ? parseInt(document.getElementById('guest_count').value || '1', 10)
+      : 1,
+    message: null
+  };
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    try {
+      await fetch('/.netlify/functions/send-rsvp-email', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+    } catch(emailErr) {
+      console.warn('RSVP saved, but email notification failed.', emailErr);
+    }
+
+    document.getElementById('formContent').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+    document.getElementById('successTitle').textContent = payload.name
+      ? "Thank you, " + payload.name + "!"
+      : "Thank you!";
+
+  } catch(err) {
+    errorBox.textContent = "Sorry, the RSVP could not be saved. Please email Christian at krettek@hotmail.com.";
+    errorBox.style.display = 'block';
+    console.error(err);
+
+    button.disabled = false;
+    button.textContent = originalButtonText;
+  }
+});
 function downloadICS(){const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//CK Events//Birthday//EN","BEGIN:VEVENT","UID:christian-birthday-20260720@krettek.de","DTSTAMP:20260626T000000Z","DTSTART:20260720T080000Z","DTEND:20260720T120000Z","SUMMARY:Another Birthday — by Christian","LOCATION:Carlton Wine Room, 172-174 Faraday Street, Carlton VIC 3053","DESCRIPTION:Birthday dinner and drinks hosted by Christian.","END:VEVENT","END:VCALENDAR"].join("\r\n");const blob=new Blob([ics],{type:"text/calendar"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="christian-birthday.ics";a.click();URL.revokeObjectURL(url);}
 </script>
 </body>
