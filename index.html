@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Another Birthday — by Christian</title>
+<style>
+:root{--navy:#08245b;--orange:#f45117;--lav:#c8bef2;--cream:#fff8ee;--paper:#eee7dc}
+*{box-sizing:border-box} html,body{margin:0;background:var(--paper);color:var(--navy);font-family:Arial,Helvetica,sans-serif}
+.invite{width:680px;max-width:100%;margin:0 auto;background:var(--cream);box-shadow:0 8px 30px rgba(0,0,0,.15);animation:pageIn .55s ease both}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.top{position:relative;height:510px;background:var(--lav);overflow:hidden}.orange{position:absolute;top:82px;left:156px;width:354px;height:276px;background:var(--orange);display:flex;justify-content:center;align-items:center;text-align:center;color:white;font-size:64px;line-height:1.35;font-weight:300}
+.side{position:absolute;top:38px;color:var(--navy);font-size:55px;font-weight:900;letter-spacing:.055em;writing-mode:vertical-rl}.left{left:13px;transform:rotate(180deg)}.right{right:22px}
+.blocks{position:absolute;left:0;bottom:0;width:100%;height:56px;background:repeating-linear-gradient(90deg,var(--navy) 0 49px,transparent 49px 103px)}
+.content{text-align:center;padding:48px 67px 30px}.host{margin:0 0 20px;font-size:32px;line-height:1.35;font-weight:400}
+.rule{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 auto 9px}.rule span{width:154px;height:2px;background:#ff8658}.rule b{font-size:24px}
+.sub{margin:0 auto 21px;max-width:390px;font-size:14px;line-height:1.35;font-weight:700}
+.details{display:grid;grid-template-columns:1fr 1fr 1fr;margin:20px 0 27px}.detail{min-height:130px;padding:0 17px;border-left:2px solid var(--lav)}.detail:first-child{border-left:0}
+.icon{height:36px;margin-bottom:9px}.icon svg{width:32px;height:32px;stroke:var(--orange);fill:none;stroke-width:2.4}
+.label{font-size:12px;font-weight:900;letter-spacing:.14em;margin-bottom:8px}.value{font-size:16px;line-height:1.22;font-weight:700}.value span{display:block;font-weight:400}.value a{color:var(--navy);text-decoration:none}
+.mapbutton,.calbutton{display:inline-flex;align-items:center;justify-content:center;margin:1px 4px 24px;color:var(--navy);border:1.5px solid var(--navy);border-radius:999px;padding:8px 16px;text-decoration:none;font-size:13px;font-weight:800;letter-spacing:.05em;background:transparent;cursor:pointer}
+.rsvp{font-size:13px;font-weight:900;letter-spacing:.15em;margin:0 0 10px}.buttons{display:flex;justify-content:center;gap:18px;margin:0 0 13px}
+.btn{width:237px;height:55px;border-radius:7px;border:2px solid var(--navy);display:flex;align-items:center;justify-content:center;gap:13px;color:var(--navy);font-size:14px;font-weight:900;letter-spacing:.07em;cursor:pointer;background:transparent}.btn.yes{background:var(--orange);border-color:var(--orange);color:white}
+.circle{width:31px;height:31px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:20px}
+.note{margin:0 auto;max-width:513px;background:var(--lav);border-radius:7px;min-height:72px;display:flex;align-items:center;gap:22px;text-align:left;padding:13px 20px}.mail{width:54px;height:54px;border-radius:50%;background:var(--navy);color:white;flex:0 0 54px;display:flex;align-items:center;justify-content:center}.mail svg{width:30px;height:30px;stroke:white;fill:none;stroke-width:2}.notetext{font-size:14px;line-height:1.25}.notetext strong{display:block;margin-top:3px;font-size:15px;letter-spacing:.12em}
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(8,36,91,.38);backdrop-filter:blur(4px);z-index:20}.modal.open{display:flex}.dialog{width:min(100%,480px);background:var(--cream);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.28);padding:28px}.dialoghead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px}.dialog h2{margin:0;font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:400}.close{border:0;background:transparent;color:var(--navy);font-size:30px;line-height:1;cursor:pointer}
+.field{text-align:left;margin:12px 0}.field label{display:block;font-size:12px;font-weight:900;letter-spacing:.12em;margin-bottom:6px}input,textarea{width:100%;border:1px solid #d7c9ba;border-radius:8px;padding:12px;font-size:16px;font-family:Arial,Helvetica,sans-serif;background:white;color:var(--navy)}
+.submit{width:100%;border:0;border-radius:8px;background:var(--orange);color:white;padding:15px 22px;font-weight:900;letter-spacing:.08em;cursor:pointer;margin-top:10px}.submit:disabled{opacity:.55;cursor:not-allowed}.decline-submit{background:var(--navy)}.small{text-align:center;font-size:12px;opacity:.75;margin:12px 0 0}.success{text-align:center;display:none;padding:16px 0 6px}.success .check{width:74px;height:74px;margin:0 auto 16px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:44px}.success h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:40px;margin:0 0 8px}.error{display:none;text-align:center;color:#8b1a1a;background:#ffe8e8;border-radius:8px;padding:12px;margin-top:12px;font-size:14px}
+@media(max-width:680px){.top{height:75vw;min-height:420px;max-height:510px}.orange{left:23%;top:12%;width:52%;height:54%;font-size:min(9vw,64px)}.side{font-size:min(8vw,55px)}.content{padding:48px 10% 30px}.buttons{gap:16px}.btn{width:calc(50% - 8px);font-size:11.5px;gap:8px}.circle{width:28px;height:28px}.note{gap:14px}}
+</style>
+</head>
+<body>
+<main class="invite">
+<section class="top"><div class="side left">ANOTHER</div><div class="orange">YOU‘RE<br>INVITED</div><div class="side right">BIRTHDAY</div><div class="blocks"></div></section>
+<section class="content">
+<h1 class="host">by<br>Christian</h1>
+<div class="rule"><span></span><b>🥂</b><span></span></div>
+<p class="sub">Let’s celebrate with great food, good wine<br>and even better company!</p>
+<div class="details">
+<div class="detail"><div class="icon"><svg viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="21" rx="2"/><path d="M5 13h22M11 4v6M21 4v6M11 18h2M16 18h2M21 18h2M11 23h2M16 23h2M21 23h2"/></svg></div><div class="label">DATE</div><div class="value">Monday,<br>20 July 2026<span>6:00 PM</span></div></div>
+<div class="detail"><div class="icon"><svg viewBox="0 0 32 32"><path d="M16 29s9-9 9-17a9 9 0 1 0-18 0c0 8 9 17 9 17z"/><circle cx="16" cy="12" r="3"/></svg></div><div class="label">LOCATION</div><div class="value"><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=Carlton%20Wine%20Room%20172-174%20Faraday%20Street%20Carlton%20VIC%203053">Carlton Wine Room<span>172–174 Faraday Street<br>Carlton VIC 3053</span></a></div></div>
+<div class="detail"><div class="icon"><svg viewBox="0 0 32 32"><path d="M11 7l-4 10h8L11 7zM21 7l-4 10h8L21 7zM11 17v10M7 27h8M21 17v10M17 27h8"/></svg></div><div class="label">WHAT TO EXPECT</div><div class="value"><span>Dinner, drinks<br>and good vibes</span></div></div>
+</div>
+<a class="mapbutton" target="_blank" href="https://www.google.com/maps/search/?api=1&query=Carlton%20Wine%20Room%20172-174%20Faraday%20Street%20Carlton%20VIC%203053">OPEN IN GOOGLE MAPS</a>
+<button class="calbutton" onclick="downloadICS()">ADD TO CALENDAR</button>
+<div class="rsvp">KINDLY RSVP BY 6 JULY 2026</div>
+<div class="buttons"><button class="btn yes" onclick="openModal('attending')"><span class="circle">✓</span>I’LL BE THERE</button><button class="btn" onclick="openModal('declined')"><span class="circle">×</span>SORRY, CAN’T MAKE IT</button></div>
+<div class="note"><div class="mail"><svg viewBox="0 0 32 32"><rect x="4" y="8" width="24" height="17" rx="2"/><path d="M5 10l11 9 11-9"/></svg></div><div class="notetext">Once you click a button, your RSVP<br>will be saved for Christian.<strong>THANK YOU!</strong></div></div>
+</section></main>
+<div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modalTitle">RSVP</h2><button class="close" onclick="closeModal()">×</button></div>
+<form id="rsvpForm"><input type="hidden" id="status" value=""><div id="formContent"><div class="field"><label>NAME</label><input id="name" placeholder="Your name" required></div><div class="field"><label>EMAIL</label><input id="email" type="email" placeholder="Your email address"></div><div class="field" id="guestfield"><label>NUMBER OF GUESTS</label><input id="guest_count" type="number" min="1" max="10" value="1"></div><div class="field" id="dietfield"><label>DIETARY REQUIREMENTS / COMMENTS</label><textarea id="dietary" rows="3" placeholder="Optional"></textarea></div><button class="submit" id="submitButton" type="submit">SEND RSVP</button><div class="error" id="errorBox"></div><p class="small">Your response is saved securely in the guest list.</p></div><div class="success" id="successBox"><div class="check">✓</div><h2 id="successTitle">Thank you!</h2><p>Your RSVP has been received.</p></div></form>
+</div></div>
+<script>
+const SUPABASE_URL = "https://ubeaqemmnibtfichxhwt.supabase.co";
+const SUPABASE_KEY = "sb_publishable_UtDDKiR6cRZ24Gon_iu8hg_TxhX_zXX";
+const EVENT_SLUG = "christian-birthday-2026";
+function openModal(status){document.getElementById('status').value=status;document.getElementById('modalTitle').textContent=status==='attending'?"I’ll be there":"Sorry, can’t make it";document.getElementById('submitButton').classList.toggle("decline-submit",status==='declined');document.getElementById('dietfield').style.display=status==='attending'?"block":"none";document.getElementById('formContent').style.display='block';document.getElementById('successBox').style.display='none';document.getElementById('errorBox').style.display='none';document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('rsvpForm').addEventListener('submit',async function(e){e.preventDefault();const button=document.getElementById('submitButton');const errorBox=document.getElementById('errorBox');button.disabled=true;errorBox.style.display='none';const payload={event_slug:EVENT_SLUG,name:document.getElementById('name').value.trim(),email:document.getElementById('email').value.trim()||null,status:document.getElementById('status').value,dietary_requirements:document.getElementById('status').value==='attending'?(document.getElementById('dietary').value.trim()||null):null,guest_count:document.getElementById('status').value==='attending'?(parseInt(document.getElementById('guest_count').value||'1',10)):1,message:null};try{const response=await fetch(`${SUPABASE_URL}/rest/v1/rsvps`,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(payload)});if(!response.ok){throw new Error(await response.text());}try {
+  await fetch('/.netlify/functions/send-rsvp-email', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+} catch(emailErr) {
+  console.warn('RSVP saved, but email notification failed.', emailErr);
+}
+document.getElementById('formContent').style.display='none';
+document.getElementById('successBox').style.display='block';
+document.getElementById('successTitle').textContent=payload.name?"Thank you, "+payload.name+"!":"Thank you!";}catch(err){errorBox.textContent="Sorry, the RSVP could not be saved. Please email Christian at krettek@hotmail.com.";errorBox.style.display='block';console.error(err);}finally{button.disabled=false;}});
+function downloadICS(){const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//CK Events//Birthday//EN","BEGIN:VEVENT","UID:christian-birthday-20260720@krettek.de","DTSTAMP:20260626T000000Z","DTSTART:20260720T080000Z","DTEND:20260720T120000Z","SUMMARY:Another Birthday — by Christian","LOCATION:Carlton Wine Room, 172-174 Faraday Street, Carlton VIC 3053","DESCRIPTION:Birthday dinner and drinks hosted by Christian.","END:VEVENT","END:VCALENDAR"].join("\r\n");const blob=new Blob([ics],{type:"text/calendar"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="christian-birthday.ics";a.click();URL.revokeObjectURL(url);}
+</script>
+</body>
+</html>
