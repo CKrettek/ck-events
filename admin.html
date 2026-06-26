@@ -110,34 +110,90 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','
 
 async function loadData(){
   document.getElementById('rows').innerHTML='<tr><td colspan="6">Loading…</td></tr>';
+  document.getElementById('notice').style.display='none';
+
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?select=*&event_slug=eq.christian-birthday-2026&order=created_at.desc`, {
-      headers: {"apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`}
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
     });
+
     if(!res.ok) throw new Error(await res.text());
+
     currentRows = await res.json();
 
-    const attending = currentRows.filter(r=>r.status==='attending');
-    document.getElementById('total').textContent=currentRows.length;
-    document.getElementById('attending').textContent=attending.length;
-    document.getElementById('declined').textContent=currentRows.filter(r=>r.status==='declined').length;
-    document.getElementById('guests').textContent=attending.reduce((sum,r)=>sum+(parseInt(r.guest_count||1,10)),0);
-    document.getElementById('dietary').textContent=currentRows.filter(r=>r.dietary_requirements).length;
+    const attendingRows = currentRows.filter(r => r.status === 'attending');
+    const declinedRows = currentRows.filter(r => r.status === 'declined');
+    const dietaryRows = currentRows.filter(r => r.dietary_requirements && r.dietary_requirements.trim() !== '');
 
-    const rows=currentRows.map(r=>`<tr>
-      <td>${fmtTime(r.created_at)}</td>
-      <td>${escapeHtml(r.name||'')}</td>
-      <td>${escapeHtml(r.email||'')}</td>
-      <td class="status ${r.status}">${r.status==='attending'?'✓ attending':'× declined'}</td>
-      <td>${r.guest_count||1}</td>
-      <td>${escapeHtml(r.dietary_requirements||'')}</td>
-    </tr>`).join('');
-    document.getElementById('rows').innerHTML=rows||'<tr><td colspan="6">No RSVPs yet.</td></tr>';
+    const totalGuests = attendingRows.reduce((sum, r) => {
+      return sum + (parseInt(r.guest_count || '1', 10) || 1);
+    }, 0);
+
+    document.getElementById('total').textContent = currentRows.length;
+    document.getElementById('attending').textContent = attendingRows.length;
+    document.getElementById('declined').textContent = declinedRows.length;
+    document.getElementById('guests').textContent = totalGuests;
+    document.getElementById('dietary').textContent = dietaryRows.length;
+
+    const rows = currentRows.map(r => {
+      const statusText = r.status === 'attending' ? '✓ attending' : '× declined';
+      const guests = r.status === 'attending' ? (r.guest_count || 1) : '';
+      const dietary = r.dietary_requirements || '';
+
+      return `<tr>
+        <td>${fmtTime(r.created_at)}</td>
+        <td><strong>${escapeHtml(r.name || '')}</strong></td>
+        <td>${escapeHtml(r.email || '')}</td>
+        <td class="status ${escapeHtml(r.status || '')}">${statusText}</td>
+        <td>${guests}</td>
+        <td>${escapeHtml(dietary)}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('rows').innerHTML = rows || '<tr><td colspan="6">No RSVPs yet.</td></tr>';
+
   } catch(e) {
     document.getElementById('rows').innerHTML='<tr><td colspan="6">Could not load RSVPs.</td></tr>';
     showNotice('Could not load data. Check Supabase SELECT policy.');
     console.error(e);
   }
+}
+
+function downloadCSV(){
+  const headers = [
+    'created_at',
+    'name',
+    'email',
+    'status',
+    'guest_count',
+    'dietary_requirements'
+  ];
+
+  const csvRows = [];
+  csvRows.push(headers.join(';'));
+
+  currentRows.forEach(r => {
+    const row = headers.map(h => {
+      let value = r[h] ?? '';
+      value = String(value).replace(/"/g, '""');
+      return `"${value}"`;
+    });
+    csvRows.push(row.join(';'));
+  });
+
+  const csv = '\ufeff' + csvRows.join('\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ck-events-rsvps.csv';
+  a.click();
+
+  URL.revokeObjectURL(url);
 }
 
 function downloadCSV(){
