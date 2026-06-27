@@ -85,22 +85,55 @@ document.getElementById('rsvpForm').addEventListener('submit', async function(e)
   };
 
   try {
-  payload.updated_at = new Date().toISOString();
+    payload.updated_at = new Date().toISOString();
 
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?on_conflict=event_slug,email`, {
+const emailForQuery = encodeURIComponent(payload.email.toLowerCase());
+
+const existingResponse = await fetch(
+  `${SUPABASE_URL}/rest/v1/rsvps?select=id&event_slug=eq.${EVENT_SLUG}&email=ilike.${emailForQuery}`,
+  {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    }
+  }
+);
+
+if (!existingResponse.ok) {
+  throw new Error(await existingResponse.text());
+}
+
+const existingRows = await existingResponse.json();
+
+let response;
+
+if (existingRows.length > 0) {
+  response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?id=eq.${existingRows[0].id}`, {
+    method: "PATCH",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+} else {
+  response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps`, {
     method: "POST",
     headers: {
       "apikey": SUPABASE_KEY,
       "Authorization": `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json",
-      "Prefer": "resolution=merge-duplicates,return=minimal"
+      "Prefer": "return=minimal"
     },
     body: JSON.stringify(payload)
   });
+}
 
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
+if (!response.ok) {
+  throw new Error(await response.text());
+}
     try {
       await fetch('/.netlify/functions/send-rsvp-email', {
         method: 'POST',
