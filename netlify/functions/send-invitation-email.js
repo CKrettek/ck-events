@@ -85,14 +85,10 @@ exports.handler = async function(event) {
 
       const emailPayload = {
         from: 'CK <christian@events.krettek.eu>',
-        to: [guest.email],
+        to: [guest.email, ...ccEmails],
         subject: 'You’re invited — Another Birthday',
         html
       };
-
-      if (ccEmails.length) {
-        emailPayload.cc = ccEmails;
-      }
 
       const result = await sendEmail(emailPayload, RESEND_API_KEY);
   
