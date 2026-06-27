@@ -51,7 +51,7 @@ exports.handler = async function(event) {
 
   // Notify host
   messages.push(sendEmail({
-    from: 'CK <noreply@events.krettek.eu>',
+    from: 'CK <christian@events.krettek.eu>',
     to: ['krettek@hotmail.com'],
     subject: `New RSVP: ${name} — ${status}`,
     html: hostHtml
@@ -60,7 +60,7 @@ exports.handler = async function(event) {
   // Confirm guest, if an email was entered.
   if (email) {
     messages.push(sendEmail({
-      from: 'CK <noreply@events.krettek.eu>',
+      from: 'CK <christian@events.krettek.eu>',
       to: [email],
       subject: 'Thank you for your RSVP',
       html: eventDetailsHtml
