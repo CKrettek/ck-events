@@ -408,8 +408,9 @@ function renderGuests(){
       <td>${escapeHtml(g.category || '')}</td>
       <td>${g.guest_count || 1}</td>
       <td>${escapeHtml(g.notes || '')}</td>
-      <td>${escapeHtml(g.invite_status || 'not_sent')}</td>
+      <td>${formatInviteStatus(g)}</td>
       <td>
+        <button class="mini" onclick="sendInvitation('${g.id}')">Send invitation</button>
         <button class="mini" onclick="editGuest('${g.id}')">Edit</button>
         <button class="mini secondary" onclick="deleteGuest('${g.id}', '${escapeHtml(g.display_name)}')">Delete</button>
       </td>
@@ -525,6 +526,43 @@ async function deleteGuest(id, name){
     console.error(e);
   }
 }
+
+
+function formatInviteStatus(g){
+  if(g.invite_status === 'sent'){
+    return `✓ Sent<br><span class="small">${fmtTime(g.invited_at)}</span>`;
+  }
+  return escapeHtml(g.invite_status || 'not_sent');
+}
+
+async function sendInvitation(id){
+  const g = currentGuests.find(x => String(x.id) === String(id));
+  if(!g) return alert('Guest not found');
+
+  if(!g.email) return alert('This guest has no email address.');
+
+  if(!confirm(`Send invitation to ${g.display_name} at ${g.email}?`)) return;
+
+  try {
+    const res = await fetch('/.netlify/functions/send-invitation-email', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ guest_id: id })
+    });
+
+    const text = await res.text();
+    if(!res.ok) throw new Error(text);
+
+    alert('Invitation sent.');
+    await loadGuests();
+
+  } catch(e) {
+    alert('Could not send invitation.');
+    console.error(e);
+  }
+}
+
+window.sendInvitation = sendInvitation;
 
 window.switchTab = switchTab;
 window.addGuest = addGuest;
