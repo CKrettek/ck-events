@@ -96,7 +96,7 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
     <table>
       <thead>
         <tr>
-          <th>Last update</th><th>Name</th><th>Email</th><th>Status</th><th>Guests</th><th>Dietary / comments</th>
+          <th>Last update</th><th>Name</th><th>Email</th><th>Status</th><th>Guests</th><th>Dietary / comments</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="rows"><tr><td colspan="6">Loading…</td></tr></tbody>
@@ -220,6 +220,10 @@ function renderRows(){
       <td><span class="badge ${status}">${statusText}</span></td>
       <td>${guests}</td>
       <td>${escapeHtml(r.dietary_requirements || '')}</td>
+<td>
+  <button onclick="editRSVP('${r.id}')">Edit</button>
+  <button class="secondary" onclick="deleteRSVP('${r.id}', '${escapeHtml(r.name)}')">Delete</button>
+</td>
     </tr>`;
   }).join('');
 
@@ -249,6 +253,77 @@ function downloadCSV(){
   a.click();
   URL.revokeObjectURL(url);
 }
-</script>
+function editRSVP(id){
+  const r = currentRows.find(x => String(x.id) === String(id));
+  if(!r) return alert('RSVP not found');
+
+  const name = prompt('Name:', r.name || '');
+  if(name === null) return;
+
+  const email = prompt('Email:', r.email || '');
+  if(email === null) return;
+
+  const status = prompt('Status: attending or declined', r.status || 'attending');
+  if(status === null) return;
+
+  const guest_count = prompt('Number of guests:', r.guest_count || 1);
+  if(guest_count === null) return;
+
+  const dietary_requirements = prompt('Dietary requirements / comments:', r.dietary_requirements || '');
+  if(dietary_requirements === null) return;
+
+  saveRSVPEdit(id, {
+    name: name.trim(),
+    email: email.trim(),
+    status: status.trim() === 'declined' ? 'declined' : 'attending',
+    guest_count: parseInt(guest_count || '1', 10) || 1,
+    dietary_requirements: dietary_requirements.trim() || null,
+    updated_at: new Date().toISOString()
+  });
+}
+
+async function saveRSVPEdit(id, payload){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+
+    await loadData();
+  } catch(e) {
+    alert('Could not save RSVP.');
+    console.error(e);
+  }
+}
+
+async function deleteRSVP(id, name){
+  if(!confirm(`Delete RSVP from ${name || 'this guest'}?`)) return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Prefer": "return=minimal"
+      }
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+
+    await loadData();
+  } catch(e) {
+    alert('Could not delete RSVP.');
+    console.error(e);
+  }
+}
 </body>
 </html>
