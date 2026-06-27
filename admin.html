@@ -43,13 +43,13 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
 </head>
 <body>
 
-<div class="login" id="login">
+<div class="login" id="loginScreen">
   <div class="loginbox">
     <h1>CK Events</h1>
     <p>Admin dashboard</p>
     <input id="password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') adminLogin()">
     <button onclick="adminLogin()">Open Dashboard</button>
-    <p class="small">Temporary protection for Phase 2.</p>
+    <p class="small">Admin access for Phase 2.2.</p>
   </div>
 </div>
 
@@ -115,7 +115,7 @@ function adminLogin(){
   const pw = document.getElementById('password').value;
   if(pw === ADMIN_PASSWORD){
     sessionStorage.setItem('ck_admin','yes');
-    document.getElementById('login').style.display='none';
+    document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
     loadData();
   } else alert('Wrong password');
@@ -127,7 +127,7 @@ function logout(){
 }
 
 if(sessionStorage.getItem('ck_admin') === 'yes'){
-  document.getElementById('login').style.display='none';
+  document.getElementById('loginScreen').style.display='none';
   document.getElementById('dashboard').style.display='block';
   loadData();
 }
