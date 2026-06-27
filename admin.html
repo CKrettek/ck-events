@@ -47,8 +47,8 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
   <div class="loginbox">
     <h1>CK Events</h1>
     <p>Admin dashboard</p>
-    <input id="password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') login()">
-    <button onclick="login()">Open Dashboard</button>
+    <input id="password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') adminLogin()">
+    <button onclick="adminLogin()">Open Dashboard</button>
     <p class="small">Temporary protection for Phase 2.</p>
   </div>
 </div>
@@ -111,7 +111,7 @@ const ADMIN_PASSWORD = "Christian2026";
 const EVENT_SLUG = "christian-birthday-2026";
 let currentRows = [];
 
-function login(){
+function adminLogin(){
   const pw = document.getElementById('password').value;
   if(pw === ADMIN_PASSWORD){
     sessionStorage.setItem('ck_admin','yes');
