@@ -20,7 +20,7 @@ button.secondary{background:var(--orange)}
 h1{font-size:48px}
 .sub{margin:8px 0 0;font-size:16px;opacity:.8}
 .actions{display:flex;gap:10px;flex-wrap:wrap}
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
 .card{background:var(--cream);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .num{font-size:38px;font-weight:900}
 .label{font-size:12px;font-weight:900;letter-spacing:.1em;margin-top:6px}
@@ -86,6 +86,10 @@ td .mini{padding:7px 10px;font-size:12px;border-radius:8px}
     <div class="card"><div class="num" id="declined">–</div><div class="label">DECLINED</div></div>
     <div class="card"><div class="num" id="guests">–</div><div class="label">TOTAL GUESTS</div></div>
     <div class="card"><div class="num" id="dietary">–</div><div class="label">DIETARY NOTES</div></div>
+    <div class="card"><div class="num" id="guestList">–</div><div class="label">GUEST LIST</div></div>
+    <div class="card"><div class="num" id="invited">–</div><div class="label">INVITED</div></div>
+    <div class="card"><div class="num" id="notSent">–</div><div class="label">NOT SENT</div></div>
+    <div class="card"><div class="num" id="noRsvp">–</div><div class="label">NO RSVP</div></div>
   </div>
 
   <div class="controls">
@@ -209,11 +213,37 @@ function updateCards(){
   const attendingRows = currentRows.filter(r => r.status === 'attending');
   const declinedRows = currentRows.filter(r => r.status === 'declined');
 
+  const invitedRows = currentGuests.filter(g => g.invite_status === 'sent');
+  const notSentRows = currentGuests.filter(g => g.invite_status !== 'sent');
+
+  const rsvpGuestIds = new Set(
+    currentRows
+      .filter(r => r.guest_id)
+      .map(r => String(r.guest_id))
+  );
+
+  const rsvpEmails = new Set(
+    currentRows
+      .filter(r => r.email)
+      .map(r => String(r.email).toLowerCase())
+  );
+
+  const noRsvpRows = currentGuests.filter(g => {
+    if(g.id && rsvpGuestIds.has(String(g.id))) return false;
+    if(g.email && rsvpEmails.has(String(g.email).toLowerCase())) return false;
+    return true;
+  });
+
   document.getElementById('total').textContent = currentRows.length;
   document.getElementById('attending').textContent = attendingRows.length;
   document.getElementById('declined').textContent = declinedRows.length;
   document.getElementById('guests').textContent = attendingRows.reduce((sum,r)=>sum+(parseInt(r.guest_count||1,10)||1),0);
   document.getElementById('dietary').textContent = currentRows.filter(r => r.dietary_requirements && r.dietary_requirements.trim() !== '').length;
+
+  document.getElementById('guestList').textContent = currentGuests.length;
+  document.getElementById('invited').textContent = invitedRows.length;
+  document.getElementById('notSent').textContent = notSentRows.length;
+  document.getElementById('noRsvp').textContent = noRsvpRows.length;
 }
 
 function getVisibleRows(){
@@ -381,6 +411,7 @@ async function loadGuests(){
 
     if(!res.ok) throw new Error(await res.text());
     currentGuests = await res.json();
+    updateCards();
     renderGuests();
   } catch(e) {
     document.getElementById('guestRows').innerHTML='<tr><td colspan="8">Could not load guests.</td></tr>';
