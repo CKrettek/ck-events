@@ -84,7 +84,7 @@ exports.handler = async function(event) {
       const ccEmails = parseEmailList(guest.cc_emails);
 
       const emailPayload = {
-        from: 'Christian Krettek <noreply@events.krettek.eu>',
+        from: 'CK <christian@events.krettek.eu>',
         to: [guest.email],
         subject: 'You’re invited — Another Birthday',
         html
