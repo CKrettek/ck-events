@@ -85,21 +85,22 @@ document.getElementById('rsvpForm').addEventListener('submit', async function(e)
   };
 
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps`, {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify(payload)
-    });
+  payload.updated_at = new Date().toISOString();
 
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rsvps?on_conflict=event_slug,email`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      "Prefer": "resolution=merge-duplicates,return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
 
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
     try {
       await fetch('/.netlify/functions/send-rsvp-email', {
         method: 'POST',
