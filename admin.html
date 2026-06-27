@@ -111,7 +111,7 @@ const ADMIN_PASSWORD = "Christian2026";
 const EVENT_SLUG = "christian-birthday-2026";
 let currentRows = [];
 
-function adminLogin(){
+window.adminLogin = function(){
   const pw = document.getElementById('password').value;
   if(pw === ADMIN_PASSWORD){
     sessionStorage.setItem('ck_admin','yes');
@@ -119,7 +119,7 @@ function adminLogin(){
     document.getElementById('dashboard').style.display='block';
     loadData();
   } else alert('Wrong password');
-}
+};
 
 function logout(){
   sessionStorage.removeItem('ck_admin');
@@ -325,5 +325,6 @@ async function deleteRSVP(id, name){
     console.error(e);
   }
 }
+</script>
 </body>
 </html>
