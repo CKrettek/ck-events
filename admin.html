@@ -96,7 +96,7 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
     <table>
       <thead>
         <tr>
-          <th>Time</th><th>Name</th><th>Email</th><th>Status</th><th>Guests</th><th>Dietary / comments</th>
+          <th>Last update</th><th>Name</th><th>Email</th><th>Status</th><th>Guests</th><th>Dietary / comments</th>
         </tr>
       </thead>
       <tbody id="rows"><tr><td colspan="6">Loading…</td></tr></tbody>
@@ -214,7 +214,7 @@ function renderRows(){
     const email = r.email ? `<a class="email" href="mailto:${escapeHtml(r.email)}">${escapeHtml(r.email)}</a>` : '';
 
     return `<tr>
-      <td>${fmtTime(r.created_at)}</td>
+      <td>${fmtTime(r.updated_at || r.created_at)}</td>
       <td><strong>${escapeHtml(r.name)}</strong></td>
       <td>${email}</td>
       <td><span class="badge ${status}">${statusText}</span></td>
