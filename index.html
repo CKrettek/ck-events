@@ -54,6 +54,38 @@
 const SUPABASE_URL = "https://ubeaqemmnibtfichxhwt.supabase.co";
 const SUPABASE_KEY = "sb_publishable_UtDDKiR6cRZ24Gon_iu8hg_TxhX_zXX";
 const EVENT_SLUG = "christian-birthday-2026";
+let invitedGuest = null;
+
+async function loadInvitedGuest(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if(!token) return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/guests?select=*&invitation_token=eq.${encodeURIComponent(token)}&limit=1`, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+
+    const rows = await res.json();
+    if(!rows.length) return;
+
+    invitedGuest = rows[0];
+
+    document.getElementById('name').value = invitedGuest.display_name || '';
+    document.getElementById('email').value = invitedGuest.email || '';
+    document.getElementById('guest_count').value = invitedGuest.guest_count || 1;
+
+  } catch(e) {
+    console.warn('Could not load invited guest.', e);
+  }
+}
+
+loadInvitedGuest();
 function openModal(status){document.getElementById('status').value=status;document.getElementById('modalTitle').textContent=status==='attending'?"I’ll be there":"Sorry, can’t make it";document.getElementById('submitButton').classList.toggle("decline-submit",status==='declined');document.getElementById('dietfield').style.display=status==='attending'?"block":"none";document.getElementById('formContent').style.display='block';document.getElementById('successBox').style.display='none';document.getElementById('errorBox').style.display='none';document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
@@ -81,7 +113,8 @@ document.getElementById('rsvpForm').addEventListener('submit', async function(e)
     guest_count: document.getElementById('status').value === 'attending'
       ? parseInt(document.getElementById('guest_count').value || '1', 10)
       : 1,
-    message: null
+    message: null,
+    guest_id: invitedGuest ? invitedGuest.id : null
   };
 
   try {
