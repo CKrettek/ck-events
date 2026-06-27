@@ -129,10 +129,10 @@ td .mini{padding:7px 10px;font-size:12px;border-radius:8px}
       <table>
         <thead>
           <tr>
-            <th>Name</th><th>Email</th><th>Category</th><th>Guests</th><th>Notes</th><th>Invite Status</th><th>Actions</th>
+            <th>Name</th><th>Email</th><th>CC emails</th><th>Category</th><th>Guests</th><th>Notes</th><th>Invite Status</th><th>Actions</th>
           </tr>
         </thead>
-        <tbody id="guestRows"><tr><td colspan="7">No guests yet.</td></tr></tbody>
+        <tbody id="guestRows"><tr><td colspan="8">No guests yet.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -383,7 +383,7 @@ async function loadGuests(){
     currentGuests = await res.json();
     renderGuests();
   } catch(e) {
-    document.getElementById('guestRows').innerHTML='<tr><td colspan="7">Could not load guests.</td></tr>';
+    document.getElementById('guestRows').innerHTML='<tr><td colspan="8">Could not load guests.</td></tr>';
     console.error(e);
   }
 }
@@ -405,6 +405,7 @@ function renderGuests(){
     return `<tr>
       <td><strong>${escapeHtml(g.display_name || '')}</strong></td>
       <td>${email}</td>
+      <td>${escapeHtml(g.cc_emails || '')}</td>
       <td>${escapeHtml(g.category || '')}</td>
       <td>${g.guest_count || 1}</td>
       <td>${escapeHtml(g.notes || '')}</td>
@@ -417,7 +418,7 @@ function renderGuests(){
     </tr>`;
   }).join('');
 
-  document.getElementById('guestRows').innerHTML = html || '<tr><td colspan="7">No matching guests.</td></tr>';
+  document.getElementById('guestRows').innerHTML = html || '<tr><td colspan="8">No matching guests.</td></tr>';
 }
 
 function addGuest(){
@@ -426,6 +427,9 @@ function addGuest(){
 
   const email = prompt('Email:');
   if(email === null) return;
+
+  const cc_emails = prompt('Additional email addresses / CC, separated by semicolon:', '');
+  if(cc_emails === null) return;
 
   const guest_count = prompt('Number of guests:', '1');
   if(guest_count === null) return;
@@ -440,6 +444,7 @@ function addGuest(){
     event_slug: EVENT_SLUG,
     display_name: display_name.trim(),
     email: email.trim() || null,
+    cc_emails: cc_emails.trim() || null,
     guest_count: parseInt(guest_count || '1', 10) || 1,
     category: category.trim() || null,
     notes: notes.trim() || null,
@@ -458,6 +463,9 @@ function editGuest(id){
   const email = prompt('Email:', g.email || '');
   if(email === null) return;
 
+  const cc_emails = prompt('Additional email addresses / CC, separated by semicolon:', g.cc_emails || '');
+  if(cc_emails === null) return;
+
   const guest_count = prompt('Number of guests:', g.guest_count || 1);
   if(guest_count === null) return;
 
@@ -473,6 +481,7 @@ function editGuest(id){
   saveGuest(id, {
     display_name: display_name.trim(),
     email: email.trim() || null,
+    cc_emails: cc_emails.trim() || null,
     guest_count: parseInt(guest_count || '1', 10) || 1,
     category: category.trim() || null,
     notes: notes.trim() || null,

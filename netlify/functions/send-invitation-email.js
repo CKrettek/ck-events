@@ -81,12 +81,20 @@ exports.handler = async function(event) {
         </div>
       `;
   
-      const result = await sendEmail({
+      const ccEmails = parseEmailList(guest.cc_emails);
+
+      const emailPayload = {
         from: 'CK Events <onboarding@resend.dev>',
         to: [guest.email],
         subject: 'You’re invited — Another Birthday',
         html
-      }, RESEND_API_KEY);
+      };
+
+      if (ccEmails.length) {
+        emailPayload.cc = ccEmails;
+      }
+
+      const result = await sendEmail(emailPayload, RESEND_API_KEY);
   
       await updateGuest(guestId, {
         invite_status: 'sent',
@@ -152,6 +160,13 @@ exports.handler = async function(event) {
     return text ? JSON.parse(text) : {};
   }
   
+  function parseEmailList(value) {
+    return String(value || '')
+      .split(/[;,\n]+/)
+      .map(v => v.trim())
+      .filter(v => v && v.includes('@'));
+  }
+
   function makeToken() {
     return Array.from(crypto.getRandomValues(new Uint8Array(24)))
       .map(b => b.toString(16).padStart(2, '0'))
