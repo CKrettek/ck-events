@@ -37,6 +37,11 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
 .notice{background:#fff4d8;border:1px solid #efd28a;border-radius:12px;padding:14px;margin:14px 0;display:none}
 .email{color:var(--navy)}
 .small{font-size:12px;opacity:.75;margin-top:12px}
+.tabs{display:flex;gap:10px;margin:18px 0}
+.tabs button{background:#d9d0c3;color:var(--navy)}
+.tabs button.active{background:var(--navy);color:white}
+.guest-actions{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+td .mini{padding:7px 10px;font-size:12px;border-radius:8px}
 @media(max-width:900px){.header{display:block}.cards{grid-template-columns:repeat(2,1fr)}h1{font-size:40px}}
 @media(max-width:650px){.cards{grid-template-columns:1fr}.controls input,.controls select{width:100%;min-width:0}th,td{padding:10px 8px;font-size:13px}}
 </style>
@@ -69,6 +74,12 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
 
   <div id="notice" class="notice"></div>
 
+  <div class="tabs">
+    <button id="tabRsvps" class="active" onclick="switchTab('rsvps')">RSVPs</button>
+    <button id="tabGuests" onclick="switchTab('guests')">Guests</button>
+  </div>
+
+  <div id="rsvpSection">
   <div class="cards">
     <div class="card"><div class="num" id="total">–</div><div class="label">TOTAL RSVPS</div></div>
     <div class="card"><div class="num" id="attending">–</div><div class="label">ATTENDING</div></div>
@@ -99,8 +110,31 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;background:#fbf3
           <th>Last update</th><th>Name</th><th>Email</th><th>Status</th><th>Guests</th><th>Dietary / comments</th><th>Actions</th>
         </tr>
       </thead>
-      <tbody id="rows"><tr><td colspan="6">Loading…</td></tr></tbody>
+      <tbody id="rows"><tr><td colspan="7">Loading…</td></tr></tbody>
     </table>
+  </div>
+  </div>
+
+  <div id="guestSection" style="display:none">
+    <div class="guest-actions">
+      <button onclick="addGuest()">+ Add Guest</button>
+      <button onclick="loadGuests()">Refresh Guests</button>
+    </div>
+
+    <div class="controls">
+      <input id="guestSearch" placeholder="Search guest name or email…" oninput="renderGuests()">
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Category</th><th>Guests</th><th>Notes</th><th>Invite Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="guestRows"><tr><td colspan="7">No guests yet.</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -110,6 +144,8 @@ const SUPABASE_KEY = "sb_publishable_UtDDKiR6cRZ24Gon_iu8hg_TxhX_zXX";
 const ADMIN_PASSWORD = "Christian2026";
 const EVENT_SLUG = "christian-birthday-2026";
 let currentRows = [];
+let currentGuests = [];
+let activeTab = 'rsvps';
 
 window.adminLogin = function(){
   const pw = document.getElementById('password').value;
@@ -118,6 +154,7 @@ window.adminLogin = function(){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashboard').style.display='block';
     loadData();
+    loadGuests();
   } else alert('Wrong password');
 };
 
@@ -130,6 +167,7 @@ if(sessionStorage.getItem('ck_admin') === 'yes'){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('dashboard').style.display='block';
   loadData();
+  loadGuests();
 }
 
 function showNotice(text){
@@ -325,6 +363,175 @@ async function deleteRSVP(id, name){
     console.error(e);
   }
 }
+
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('rsvpSection').style.display = tab === 'rsvps' ? 'block' : 'none';
+  document.getElementById('guestSection').style.display = tab === 'guests' ? 'block' : 'none';
+  document.getElementById('tabRsvps').classList.toggle('active', tab === 'rsvps');
+  document.getElementById('tabGuests').classList.toggle('active', tab === 'guests');
+  if(tab === 'guests') loadGuests();
+}
+
+async function loadGuests(){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/guests?select=*&event_slug=eq.${EVENT_SLUG}&order=display_name.asc`, {
+      headers: {"apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`}
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+    currentGuests = await res.json();
+    renderGuests();
+  } catch(e) {
+    document.getElementById('guestRows').innerHTML='<tr><td colspan="7">Could not load guests.</td></tr>';
+    console.error(e);
+  }
+}
+
+function renderGuests(){
+  const q = (document.getElementById('guestSearch')?.value || '').trim().toLowerCase();
+
+  let guests = [...currentGuests];
+  if(q){
+    guests = guests.filter(g =>
+      String(g.display_name || '').toLowerCase().includes(q) ||
+      String(g.email || '').toLowerCase().includes(q) ||
+      String(g.category || '').toLowerCase().includes(q)
+    );
+  }
+
+  const html = guests.map(g => {
+    const email = g.email ? `<a class="email" href="mailto:${escapeHtml(g.email)}">${escapeHtml(g.email)}</a>` : '';
+    return `<tr>
+      <td><strong>${escapeHtml(g.display_name || '')}</strong></td>
+      <td>${email}</td>
+      <td>${escapeHtml(g.category || '')}</td>
+      <td>${g.guest_count || 1}</td>
+      <td>${escapeHtml(g.notes || '')}</td>
+      <td>${escapeHtml(g.invite_status || 'not_sent')}</td>
+      <td>
+        <button class="mini" onclick="editGuest('${g.id}')">Edit</button>
+        <button class="mini secondary" onclick="deleteGuest('${g.id}', '${escapeHtml(g.display_name)}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('guestRows').innerHTML = html || '<tr><td colspan="7">No matching guests.</td></tr>';
+}
+
+function addGuest(){
+  const display_name = prompt('Guest name:');
+  if(display_name === null) return;
+
+  const email = prompt('Email:');
+  if(email === null) return;
+
+  const guest_count = prompt('Number of guests:', '1');
+  if(guest_count === null) return;
+
+  const category = prompt('Category:', '');
+  if(category === null) return;
+
+  const notes = prompt('Notes:', '');
+  if(notes === null) return;
+
+  saveGuest(null, {
+    event_slug: EVENT_SLUG,
+    display_name: display_name.trim(),
+    email: email.trim() || null,
+    guest_count: parseInt(guest_count || '1', 10) || 1,
+    category: category.trim() || null,
+    notes: notes.trim() || null,
+    invite_status: 'not_sent',
+    updated_at: new Date().toISOString()
+  });
+}
+
+function editGuest(id){
+  const g = currentGuests.find(x => String(x.id) === String(id));
+  if(!g) return alert('Guest not found');
+
+  const display_name = prompt('Guest name:', g.display_name || '');
+  if(display_name === null) return;
+
+  const email = prompt('Email:', g.email || '');
+  if(email === null) return;
+
+  const guest_count = prompt('Number of guests:', g.guest_count || 1);
+  if(guest_count === null) return;
+
+  const category = prompt('Category:', g.category || '');
+  if(category === null) return;
+
+  const notes = prompt('Notes:', g.notes || '');
+  if(notes === null) return;
+
+  const invite_status = prompt('Invite status: not_sent, sent, reminded', g.invite_status || 'not_sent');
+  if(invite_status === null) return;
+
+  saveGuest(id, {
+    display_name: display_name.trim(),
+    email: email.trim() || null,
+    guest_count: parseInt(guest_count || '1', 10) || 1,
+    category: category.trim() || null,
+    notes: notes.trim() || null,
+    invite_status: invite_status.trim() || 'not_sent',
+    updated_at: new Date().toISOString()
+  });
+}
+
+async function saveGuest(id, payload){
+  try {
+    const url = id
+      ? `${SUPABASE_URL}/rest/v1/guests?id=eq.${id}`
+      : `${SUPABASE_URL}/rest/v1/guests`;
+
+    const res = await fetch(url, {
+      method: id ? 'PATCH' : 'POST',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+    await loadGuests();
+  } catch(e) {
+    alert('Could not save guest.');
+    console.error(e);
+  }
+}
+
+async function deleteGuest(id, name){
+  if(!confirm(`Delete guest ${name || ''}?`)) return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/guests?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Prefer": "return=minimal"
+      }
+    });
+
+    if(!res.ok) throw new Error(await res.text());
+    await loadGuests();
+  } catch(e) {
+    alert('Could not delete guest.');
+    console.error(e);
+  }
+}
+
+window.switchTab = switchTab;
+window.addGuest = addGuest;
+window.editGuest = editGuest;
+window.deleteGuest = deleteGuest;
+window.loadGuests = loadGuests;
+
 </script>
 </body>
 </html>
